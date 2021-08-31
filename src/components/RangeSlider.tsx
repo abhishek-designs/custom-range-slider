@@ -1,20 +1,61 @@
 import { useDrag } from "react-use-gesture";
 import { useSpring, animated } from "react-spring";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
-const RangeSlider = () => {
+type Color = "red" | "green" | "blue" | "purple";
+
+type Props = {
+  minRange: number;
+  maxRange: number;
+  showMarker?: boolean;
+  showRange?: boolean;
+  sliderColor?: Color;
+  thumb?: any;
+  onSliderChange: Function;
+};
+
+interface SliderTheme {
+  mainColor: string;
+  remainColor: string;
+}
+
+const RangeSlider = ({
+  minRange,
+  maxRange,
+  showMarker,
+  showRange,
+  thumb,
+  sliderColor,
+  onSliderChange,
+}: Props) => {
   const [sliderWidth] = useState<number>(320);
   const [thumbOffset] = useState<number>(30);
+  const [progress, setProgress] = useState<number>(0);
+  const [min, setMinRange] = useState<number>(minRange);
+  const [max, setMaxRange] = useState<number>(maxRange);
+  const [outputRange, setOutput] = useState<number>(0);
+  const [markerPos, setMarkerPos] = useState<number[]>([]);
+  const [initPos, setPos] = useState<number>(0);
+  const [sliderTheme, setTheme] = useState<SliderTheme>({
+    mainColor: "hsl(0,100%,50%)",
+    remainColor: "hsl(0,30%,40%)",
+  });
   const [thumbStyle, animThumb] = useSpring(() => ({
     x: 0,
     scale: 1,
     cursor: "grab",
   }));
-  const [progress, setProgress] = useState<number>(0);
-  const [min] = useState<number>(2);
-  const [max] = useState<number>(20);
-  const [outputRange, setOutput] = useState<number>(0);
-  const [markerPos, setMarkerPos] = useState<number[]>([]);
+  const [posStyle, animPos] = useSpring(() => ({ scale: 0, x: "-50%" }));
+
+  const sliderRef = useRef<HTMLDivElement>(null);
+  const thumbRef = useRef<HTMLDivElement>(null);
+
+  const showSlider = (selectedPos: number) => {
+    // console.log(selectedPos);
+    const distance = selectedPos - initPos;
+    setPos(initPos + distance);
+    // animThumb.start({ x: selectedPos });
+  };
 
   // Function to calculate offset range on the basis of min and max num
   const calcOffsetRange = (min: number, max: number) => {
@@ -30,7 +71,6 @@ const RangeSlider = () => {
     }
 
     setMarkerPos(markPos);
-    // console.log(1000 / total);
     return range;
   };
 
@@ -51,12 +91,11 @@ const RangeSlider = () => {
   // Function to carry out output range on given min max
   const calcOutputRange = (offsetRange: number) => {
     const outRange = min + progress / offsetRange;
-    console.log(outRange);
     setOutput(outRange);
   };
 
   // Bind function to execute when user drags the thumb
-  const bind = useDrag(({ down, active, offset: [x] }) => {
+  const bind = useDrag(({ event, down, active, offset: [x] }) => {
     let thumbPos = x; // Current thumb position
     let offsetPos = x + thumbOffset; // Thubm position offset by the total offset
     const progressWidth = calcProgressWidth(offsetPos);
@@ -65,34 +104,120 @@ const RangeSlider = () => {
     if (progressWidth > 100 || progressWidth < 0) {
       thumbPos = clampNum(x, 0, sliderWidth - thumbOffset); // Clamp the position to make the thumb stay within the range
     }
+
+    // if (event.target === thumbRef.current) {
+    //   console.log("thumb is pressed");
+    //   showSlider(thumbPos);
+    // }
+
+    // Slide the thumb on drag
     animThumb.start({
       x: thumbPos,
       scale: down ? 0.8 : 1,
       cursor: down ? "grabbing" : "grab",
       immediate: active,
-    }); // Slide the thumb on drag
+    });
+
+    // Show the position num on drag
+    animPos.start({
+      scale: down ? 1 : 0,
+    });
   });
+
+  // Function to give the value of the output range
+  const sliderChange = (val: number) => {
+    onSliderChange(val);
+  };
+
+  // Function to set theme
+  const setColorTheme = (color: number) => {
+    const newColor: SliderTheme = {
+      mainColor: `hsl(${color},100%,50%)`,
+      remainColor: `hsl(${color},30%,40%)`,
+    };
+
+    setTheme(newColor);
+  };
+
+  // Function to set slider range
+  const setSliderRange = () => {
+    setMinRange(minRange);
+    setMaxRange(maxRange);
+  };
+
+  // Function to switch colors
+  const switchColors = () => {
+    switch (sliderColor) {
+      case "green":
+        setColorTheme(120);
+        break;
+      case "red":
+        setColorTheme(0);
+        break;
+      case "blue":
+        setColorTheme(210);
+        break;
+      case "purple":
+        setColorTheme(275);
+        break;
+    }
+  };
 
   useEffect(() => {
     calcOutputRange(calcOffsetRange(min, max));
-  }, [progress, outputRange]);
+    sliderChange(Math.floor(outputRange));
+    // eslint-disable-next-line
+  }, [progress, outputRange, min, max]);
+
+  useEffect(() => {
+    setSliderRange();
+    // animThumb.start({ x: initPos });
+  }, [minRange, maxRange]);
+
+  useEffect(() => {
+    switchColors();
+    // eslint-disable-next-line
+  }, [sliderColor]);
 
   return (
     <div className="slider-wrapper" style={{ width: sliderWidth }}>
-      <div className="progress-bar">
-        <div className="progress-line" style={{ width: `${progress}%` }}></div>
+      <div
+        ref={sliderRef}
+        className="progress-bar"
+        style={{ background: sliderTheme.remainColor }}
+        onClick={e => {
+          showSlider(e.nativeEvent.offsetX);
+          console.log("progress clicked");
+        }}
+      >
+        <div
+          className="progress-line"
+          style={{ width: `${progress}%`, background: sliderTheme.mainColor }}
+        ></div>
         <animated.div
+          ref={thumbRef}
           {...bind()}
-          style={thumbStyle}
+          style={
+            thumb
+              ? { ...thumbStyle, ...thumb, background: sliderTheme.mainColor }
+              : { ...thumbStyle, background: sliderTheme.mainColor }
+          }
           className="thumb"
-        ></animated.div>
+        >
+          {showRange && (
+            <animated.div style={posStyle} className="range-box">
+              {Math.floor(outputRange)}
+            </animated.div>
+          )}
+        </animated.div>
       </div>
-      <div className="progress-marker">
-        {markerPos.map((pos, i) => (
-          <div key={i} className="marker" style={{ left: `${pos}%` }}></div>
-        ))}
-      </div>
-      <h3 className="output-txt">{Math.floor(outputRange)}</h3>
+      {showMarker && (
+        <div className="progress-marker">
+          {markerPos.map((pos, i) => (
+            <div key={i} className="marker" style={{ left: `${pos}%` }}></div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

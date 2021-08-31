@@ -14,9 +14,9 @@ body {
 
 .slider-wrapper .progress-bar {
   position: relative;
+  background: hsl(0, 30%, 40%);
   width: 100%;
   height: 5px;
-  background: #333;
   border-radius: 15rem;
 }
 
@@ -39,9 +39,50 @@ body {
   border-radius: 50%;
   cursor: pointer;
   /* transition: transform 0.3s ease; */
-  background: red;
+  background: hsl(0, 100%, 50%);
   transform: scale(1);
   /* cursor: */
+}
+
+.slider-wrapper .progress-bar .thumb:hover {
+  background: hsl(0, 100%, 70%);
+}
+
+/* .slider-wrapper .progress-bar .thumb::before {
+  content: attr(data-range);
+  position: absolute;
+  background: #fff;
+  top: -3rem;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 0.4rem 1rem;
+  border-radius: 8px;
+  box-shadow: -1px 3px 10px 1px rgba(0, 0, 0, 0.1);
+} */
+
+.slider-wrapper .progress-bar .thumb .range-box {
+  position: absolute;
+  /* height: 2rem; */
+  /* width: 3rem; */
+  background: #fff;
+  top: -3rem;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 0.4rem 1rem;
+  border-radius: 8px;
+  box-shadow: -1px 3px 10px 1px rgba(0, 0, 0, 0.1);
+}
+
+.slider-wrapper .progress-bar .thumb .range-box::after {
+  content: "";
+  position: absolute;
+  height: 8px;
+  width: 8px;
+  /* background: red; */
+  transform: rotate(45deg) translateX(-50%);
+  bottom: -7px;
+  left: 50%;
+  background: #fff;
 }
 
 .slider-wrapper .progress-marker {
@@ -66,9 +107,10 @@ body {
   transform: scale(0.8);
 }
 
-.inactive {
-}
-
 .output-txt {
   position: absolute;
+}
+
+.default-range {
+  margin-top: 5rem;
 }
