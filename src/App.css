@@ -114,3 +114,35 @@ body {
 .default-range {
   margin-top: 5rem;
 }
+
+.output-led {
+  margin-top: 5rem;
+  height: 15rem;
+  width: 15rem;
+  border-radius: 10px;
+}
+
+.btn-grp {
+  margin-bottom: 5rem;
+  display: flex;
+  justify-content: space-between;
+}
+
+.led-btn {
+  padding: 0.6rem 1rem;
+  outline: none;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  color: #f4f4f4;
+}
+
+.led-btn.red {
+  background: hsl(360, 80%, 50%);
+}
+.led-btn.green {
+  background: hsl(140, 70%, 50%);
+}
+.led-btn.blue {
+  background: hsl(230, 80%, 50%);
+}

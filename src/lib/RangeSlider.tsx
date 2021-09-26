@@ -93,9 +93,9 @@ const RangeSlider: FC<Props> = ({
   };
 
   // Bind function to execute when user drags the thumb
-  const bind = useDrag(({ event, down, active, offset: [x] }) => {
+  const bind = useDrag(({ down, active, offset: [x] }) => {
     let thumbPos = x; // Current thumb position
-    let offsetPos = x + thumbOffset; // Thubm position offset by the total offset
+    let offsetPos = x + thumbOffset; // Thumb position offset by the total offset
     const progressWidth = calcProgressWidth(offsetPos);
 
     setProgress(clampNum(progressWidth, 0, 100)); // Setting the width of progress line according to thumb position
